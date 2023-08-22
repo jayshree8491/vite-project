@@ -1,62 +1,87 @@
 import React, { useState } from 'react';
-import {
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  Typography,
-  List,
-  ListItem,
-  ListItemText,
-  Checkbox,
-} from '@mui/material';
+import { TreeView, TreeItem } from '@mui/lab';
+import Checkbox from '@mui/material/Checkbox';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 
-const DepartmentTree: React.FC = () => {
-  const departments = [
-    {
-      department: 'customer_service',
-      sub_departments: ['support', 'customer_success'],
-    },
-    {
-      department: 'design',
-      sub_departments: ['graphic_design', 'product_design', 'web_design'],
-    },
-  ];
 
-  const [expanded, setExpanded] = useState<string | false>(false);
 
-  const handleAccordionChange = (panel: string) => (
-    _event: React.SyntheticEvent,
-    isExpanded: boolean
-  ) => {
-    setExpanded(isExpanded ? panel : false);
+interface DepartmentProps {
+  data: {
+    department: string;
+    sub_departments: string[];
+  }[];
+}
+
+const DepartmentTree: React.FC<DepartmentProps> = ({ data }) => {
+  const [selected, setSelected] = useState<string[]>([]);
+
+  const handleSelect = (event: React.ChangeEvent<HTMLInputElement>, nodeId: string) => {
+    let updatedSelected: string[]=[...selected];
+  
+    // If a parent department is selected, select all its sub-departments
+    if (data.some((dept) => dept.department === nodeId)) {
+      const parentDept = data.find((dept) => dept.department === nodeId);
+      if (parentDept) {
+        const subDepartments = parentDept.sub_departments;
+        updatedSelected = event.target.checked
+          ? [...selected, nodeId, ...subDepartments]
+          : selected.filter((id) => !subDepartments.includes(id) && id !== nodeId);
+      }
+    } else {
+      // If a sub-department is selected, update the parent department selection
+      updatedSelected = selected.includes(nodeId)
+        ? selected.filter((id) => id !== nodeId)
+        : [...selected, nodeId];
+      data.forEach((dept) => {
+        if (
+          dept.sub_departments.includes(nodeId) &&
+          dept.sub_departments.every((subDept) => updatedSelected.includes(subDept))
+        ) {
+          updatedSelected = updatedSelected.includes(dept.department)
+            ? updatedSelected.filter((id) => id !== dept.department)
+            : [...updatedSelected, dept.department];
+        }
+      });
+    }
+
+    setSelected(updatedSelected);
   };
 
   return (
-    <div>
-      {departments.map((department, index) => (
-        <Accordion
-          key={index}
-          expanded={expanded === department.department}
-          onChange={handleAccordionChange(department.department)}
+    <TreeView defaultCollapseIcon={<ExpandMoreIcon />} defaultExpandIcon={<ChevronRightIcon />}>
+      {data.map((dept) => (
+        <TreeItem
+          key={dept.department}
+          nodeId={dept.department}
+          label={
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <Checkbox
+                checked={selected.includes(dept.department)}
+                onChange={(e) => handleSelect(e, dept.department)}
+              />
+              {dept.department}
+            </div>
+          }
         >
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Checkbox edge="start" />
-            <Typography>{department.department}</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <List>
-              {department.sub_departments.map((subDept, subIndex) => (
-                <ListItem key={subIndex}>
-                  <Checkbox edge="start" />
-                  <ListItemText primary={subDept} />
-                </ListItem>
-              ))}
-            </List>
-          </AccordionDetails>
-        </Accordion>
+          {dept.sub_departments.map((subDept) => (
+            <TreeItem
+              key={subDept}
+              nodeId={subDept}
+              label={
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <Checkbox
+                    checked={selected.includes(subDept)}
+                    onChange={(e) => handleSelect(e, subDept)}
+                  />
+                  {subDept}
+                </div>
+              }
+            />
+          ))}
+        </TreeItem>
       ))}
-    </div>
+    </TreeView>
   );
 };
 
