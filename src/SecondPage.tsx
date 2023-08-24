@@ -60,13 +60,15 @@ const SecondPage: React.FC = () => {
   ];
 
   return (
+    <div className="second-page-container" style={{padding:'20px'}}>
     <div style={{ padding: '20px', height: 400, width: '95%' }}>
       <h1>My Data List</h1>
       <DataGrid rows={data} columns={columns} autoPageSize={true}/>
       <Link to="/">Go Back to First Page</Link>
       <h2>Select Departments</h2>
-      <div style={{width:'50%', height:'200', display:'block'}}>
+      <div style={{marginTop:'20px', width:'50%', height:'200', display:'block'}}>
       <DepartmentTree data={departments} />
+    </div>
     </div>
     </div>
   );

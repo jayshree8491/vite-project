@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-
+import './FirstPage.css';
 const FirstPage: React.FC = () => {
   const [userDetails, setUserDetails] = useState({
     name: '',
@@ -24,33 +24,44 @@ const FirstPage: React.FC = () => {
     }
   };
 
-  return (
-    <div>
-      <h1>First Page</h1>
-      <input
-        type="text"
-        name="name"
-        placeholder="Name"
-        value={userDetails.name}
-        onChange={handleInputChange}
-      />
-      <input
-        type="text"
-        name="phoneNumber"
-        placeholder="Phone Number"
-        value={userDetails.phoneNumber}
-        onChange={handleInputChange}
-      />
-      <input
-        type="text"
-        name="email"
-        placeholder="Email"
-        value={userDetails.email}
-        onChange={handleInputChange}
-      />
-      <button onClick={handleSubmit}>Submit and Go to Second Page</button>
-    </div>
-  );
+    return (
+      <div className="first-page-container">
+        <h1>My Data App</h1>
+        <h2>Please enter your details</h2>
+        <div className="form">
+          <label>Name</label>
+          <input
+            type="text"
+            name="name"
+            placeholder="enter your name"
+            value={userDetails.name}
+            onChange={handleInputChange}
+          />
+          <br/>
+          <label>Phone Number</label>
+          <input
+            type="text"
+            name="phoneNumber"
+            placeholder="Enter your Phone Number"
+            value={userDetails.phoneNumber}
+            onChange={handleInputChange}
+          />
+          <br/>
+          <label>Email</label>
+          <input
+            type="email"
+            name="email"
+            placeholder="Enter your Email"
+            value={userDetails.email}
+            onChange={handleInputChange}
+          />
+          <br/>
+          <button className="submit-button" onClick={handleSubmit}>
+            Submit and Go to Second Page
+          </button>
+        </div>
+      </div>
+    );
 };
 
 export default FirstPage;

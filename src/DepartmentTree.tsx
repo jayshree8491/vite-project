@@ -4,8 +4,6 @@ import Checkbox from '@mui/material/Checkbox';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 
-
-
 interface DepartmentProps {
   data: {
     department: string;
@@ -16,36 +14,30 @@ interface DepartmentProps {
 const DepartmentTree: React.FC<DepartmentProps> = ({ data }) => {
   const [selected, setSelected] = useState<string[]>([]);
 
-  const handleSelect = (event: React.ChangeEvent<HTMLInputElement>, nodeId: string) => {
-    let updatedSelected: string[]=[...selected];
-  
-    // If a parent department is selected, select all its sub-departments
-    if (data.some((dept) => dept.department === nodeId)) {
-      const parentDept = data.find((dept) => dept.department === nodeId);
-      if (parentDept) {
-        const subDepartments = parentDept.sub_departments;
-        updatedSelected = event.target.checked
-          ? [...selected, nodeId, ...subDepartments]
-          : selected.filter((id) => !subDepartments.includes(id) && id !== nodeId);
-      }
+  const handleSelect = (_event: React.ChangeEvent<HTMLInputElement>, nodeId: string) => {
+    const updatedSelected = new Set(selected);
+
+    // Toggle the selection of the clicked node
+    if (updatedSelected.has(nodeId)) {
+      updatedSelected.delete(nodeId);
     } else {
-      // If a sub-department is selected, update the parent department selection
-      updatedSelected = selected.includes(nodeId)
-        ? selected.filter((id) => id !== nodeId)
-        : [...selected, nodeId];
-      data.forEach((dept) => {
-        if (
-          dept.sub_departments.includes(nodeId) &&
-          dept.sub_departments.every((subDept) => updatedSelected.includes(subDept))
-        ) {
-          updatedSelected = updatedSelected.includes(dept.department)
-            ? updatedSelected.filter((id) => id !== dept.department)
-            : [...updatedSelected, dept.department];
-        }
+      updatedSelected.add(nodeId);
+    }
+
+    // Select all sub-departments when selecting a department
+    const department = data.find((dept) => dept.department === nodeId);
+    if (department && updatedSelected.has(nodeId)) {
+      department.sub_departments.forEach((subDept) => {
+        updatedSelected.add(subDept);
+      });
+    } else {
+      // Unselect all sub-departments when unselecting a department
+      department?.sub_departments.forEach((subDept) => {
+        updatedSelected.delete(subDept);
       });
     }
 
-    setSelected(updatedSelected);
+    setSelected(Array.from(updatedSelected));
   };
 
   return (
@@ -57,7 +49,10 @@ const DepartmentTree: React.FC<DepartmentProps> = ({ data }) => {
           label={
             <div style={{ display: 'flex', alignItems: 'center' }}>
               <Checkbox
-                checked={selected.includes(dept.department)}
+                checked={
+                  selected.includes(dept.department) ||
+                  dept.sub_departments.every((subDept) => selected.includes(subDept))
+                }
                 onChange={(e) => handleSelect(e, dept.department)}
               />
               {dept.department}
